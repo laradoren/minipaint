@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang = "en"> 
+    <head>
+        <meta charset = "utf-8">
+        <title> Canvas </title>
+    </head>
+
+    <body style = "margin: 0"> 
+        <canvas id ="canvas" style = "display: block;"> eror 480 </canvas>
+
+        <script> 
+            var 
+
+                canvas = document.querySelector('canvas'),
+                ctx    = canvas.getContext('2d');
+                isMouseDown = false;
+                coords = [];
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+            
+            canvas.addEventListener('mousedown', function() {
+                isMouseDown = true;
+            });
+
+            canvas.addEventListener('mouseup', function() {
+                isMouseDown = false;
+                ctx.beginPath();
+                coords.push('mouseup');
+            });
+
+            ctx.lineWidth = 10 * 2;
+            
+
+            canvas.addEventListener('mousemove', function(e) {
+                if (isMouseDown) {
+                    coords.push([e.clientX, e.clientY]);
+
+                    ctx.lineTo(e.clientX, e.clientY);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(e.clientX, e.clientY, 10, 0, 2*Math.PI);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(e.clientX, e.clientY);
+                }
+                
+            });
+
+            function save () {
+                localStorage.setItem('coords', JSON.stringify(coords));
+            }
+
+            function clear () {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+                ctx.fillStyle = 'black';
+            }
+
+            function replay () {
+                var 
+                    timer = setInterval(function () {
+                        if(!coords.length) {
+                            clearInterval(timer);
+                            ctx.beginPath();
+                            return;
+                        }
+
+                        var 
+                            crd = coords.shift(),
+                            e = {
+                                clientX: crd["0"],
+                                clientY: crd["1"]
+                            };
+                        
+                        ctx.lineTo(e.clientX, e.clientY);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(e.clientX, e.clientY, 10, 0, 2*Math.PI);
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(e.clientX, e.clientY);
+
+                    }, 30);
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if(e.keyCode == 83) {
+                    save();
+                }
+
+                if(e.keyCode == 82) {
+                    
+                    coords = JSON.parse(localStorage.getItem('coords'));
+                    clear();
+                    replay();
+                }
+
+                if (e.keyCode == 67 ) {
+                    clear();
+                }
+            })
+                
+        </script>
+    </body>
+
+</html>
